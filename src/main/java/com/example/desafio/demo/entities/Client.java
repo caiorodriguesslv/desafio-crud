@@ -1,6 +1,8 @@
 package com.example.desafio.demo.entities;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
@@ -12,6 +14,8 @@ public class Client {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @NotNull
+    @NotBlank
     private String name;
     @Column(unique = true)
     @Size(min = 11, max = 11, message = "O cpf deve conter 11 caracteres")
