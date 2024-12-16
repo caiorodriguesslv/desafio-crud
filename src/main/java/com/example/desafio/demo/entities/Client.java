@@ -3,6 +3,7 @@ package com.example.desafio.demo.entities;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Size;
 
 import java.time.LocalDate;
@@ -15,12 +16,13 @@ public class Client {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @NotNull
-    @NotBlank
+    @NotBlank(message = "Nome não pode ser vázio!")
     private String name;
     @Column(unique = true)
     @Size(min = 11, max = 11, message = "O cpf deve conter 11 caracteres")
     private String cpf;
     private Double income;
+    @PastOrPresent(message = "Data de nascimento não pode ser futura")
     private LocalDate birthDate;
     private Integer children;
 
