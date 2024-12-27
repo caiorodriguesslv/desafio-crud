@@ -1,9 +1,12 @@
 package com.example.desafio.demo.services;
 
+import com.example.desafio.demo.dto.ClientDTO;
 import com.example.desafio.demo.entities.Client;
 import com.example.desafio.demo.repositories.ClientRepository;
 import com.example.desafio.demo.services.exceptions.EntityNotFoundException;
 import com.example.desafio.demo.services.exceptions.ResourceNotFoundException;
+import com.example.desafio.demo.services.exceptions.DataIntegrityViolationException;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,40 +20,47 @@ public class ClientService {
     private ClientRepository repository;
 
     @Transactional(readOnly = true)
-    public Page<Client> findAllPaged(Pageable pageable){
-        return repository.findAll(pageable);
+    public Page<ClientDTO> findAllPaged(Pageable pageable) {
+        Page<Client> result = repository.findAll(pageable);
+        return result.map(ClientDTO::new);
     }
 
     @Transactional(readOnly = true)
-    public Client findById(Long id) {
-       return repository.findById(id).orElseThrow(
-               ()-> new ResourceNotFoundException("Recurso não encontrado!"));
+    public ClientDTO findById(Long id) {
+        Client entity = repository.findById(id).orElseThrow(
+                () -> new ResourceNotFoundException("Recurso não encontrado!"));
+        return new ClientDTO(entity);
     }
 
     @Transactional
-    public Client insert(Client client){
-        return repository.save(client);
+    public ClientDTO insert(@Valid ClientDTO dto) {
+        Client entity = new Client();
+        copyDtoToEntity(dto, entity);
+        entity = repository.save(entity);
+        return new ClientDTO(entity);
     }
 
-    public Client update(Client client, Long id){
-        try {
+    @Transactional
+    public ClientDTO update(Long id, @Valid ClientDTO dto) {
             Client entity = repository.getReferenceById(id);
-            entity.setName(client.getName());
-            entity.setCpf(client.getCpf());
-            entity.setIncome(client.getIncome());
-            entity.setBirthDate(client.getBirthDate());
-            entity.setChildren(client.getChildren());
-            return repository.save(entity);
-        } catch (EntityNotFoundException e) {
-            throw new ResourceNotFoundException("Id não encontrado");
-        }
+            copyDtoToEntity(dto, entity);
+            entity = repository.save(entity);
+            return new ClientDTO(entity);
     }
 
-    public void delete(Long id){
-        if(repository.existsById(id)) {
-            throw new EntityNotFoundException("Id não encontrado" + id);
+    public void delete(Long id) {
+        if (!repository.existsById(id)) {
+            throw new EntityNotFoundException("Id não encontrado " + id);
         }
         repository.deleteById(id);
     }
 
+
+    private void copyDtoToEntity(ClientDTO dto, Client entity) {
+        entity.setName(dto.getName());
+        entity.setCpf(dto.getCpf());
+        entity.setIncome(dto.getIncome());
+        entity.setBirthDate(dto.getBirthDate());
+        entity.setChildren(dto.getChildren());
+    }
 }

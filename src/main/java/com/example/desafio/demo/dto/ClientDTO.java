@@ -1,29 +1,32 @@
-package com.example.desafio.demo.entities;
+package com.example.desafio.demo.dto;
 
-import jakarta.persistence.*;
+import com.example.desafio.demo.entities.Client;
+import jakarta.validation.constraints.*;
 import java.time.LocalDate;
-import java.util.Objects;
 
-@Entity
-@Table(name = "tb_client")
-public class Client {
+public class ClientDTO {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(nullable = false)
+
+    @NotBlank(message = "Nome não pode ser vazio")
     private String name;
-    @Column(unique = true, length = 11)
+
+    @Pattern(regexp = "\\d{11}", message = "CPF deve ter 11 dígitos")
     private String cpf;
+
+    @PositiveOrZero(message = "Renda não pode ser negativa")
     private Double income;
-    @Column(name = "birth_date")
+
+    @PastOrPresent(message = "Data de nascimento não pode ser futura")
     private LocalDate birthDate;
+
+    @PositiveOrZero(message = "Número de filhos não pode ser negativo")
     private Integer children;
 
-    public Client() {
+    public ClientDTO(){
     }
 
-    public Client(Long id, String name, String cpf, Double income, LocalDate birthDate, Integer children) {
+    public ClientDTO(Long id, String name, String cpf, Double income, LocalDate birthDate, Integer children) {
         this.id = id;
         this.name = name;
         this.cpf = cpf;
@@ -31,6 +34,16 @@ public class Client {
         this.birthDate = birthDate;
         this.children = children;
     }
+
+    public ClientDTO(Client entity){
+        this.id = entity.getId();
+        this.cpf = entity.getCpf();
+        this.name = entity.getName();
+        this.income = entity.getIncome();
+        this.birthDate = entity.getBirthDate();
+        this.children = entity.getChildren();
+    }
+
 
     public Long getId() {
         return id;
@@ -78,17 +91,5 @@ public class Client {
 
     public void setChildren(Integer children) {
         this.children = children;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        Client client = (Client) o;
-        return Objects.equals(id, client.id) && Objects.equals(name, client.name) && Objects.equals(cpf, client.cpf) && Objects.equals(income, client.income) && Objects.equals(birthDate, client.birthDate) && Objects.equals(children, client.children);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, name, cpf, income, birthDate, children);
     }
 }
