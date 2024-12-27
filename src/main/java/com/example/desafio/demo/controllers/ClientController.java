@@ -1,13 +1,20 @@
 package com.example.desafio.demo.controllers;
 
+import com.example.desafio.demo.dto.ClientDTO;
 import com.example.desafio.demo.entities.Client;
 import com.example.desafio.demo.services.ClientService;
+import com.example.desafio.demo.services.exceptions.DataIntegrityViolationException;
+import com.example.desafio.demo.services.exceptions.ResourceNotFoundException;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import java.net.URI;
 
 @RestController
 @RequestMapping("/clients")
@@ -17,23 +24,29 @@ public class ClientController {
     private ClientService service;
 
     @GetMapping
-    public Page<Client> findAllPaged(Pageable pageable){
-        return service.findAllPaged(pageable);
+    public ResponseEntity<Page<ClientDTO>> findAll(Pageable pageable) {
+        Page<ClientDTO> list = service.findAllPaged(pageable);
+        return ResponseEntity.ok(list);
     }
 
     @GetMapping(value = "/{id}")
-    public Client findById(@PathVariable Long id) {
-        return service.findById(id);
+    public ResponseEntity <ClientDTO> findById(@PathVariable Long id) {
+        ClientDTO dto = service.findById(id);
+        return ResponseEntity.ok(dto);
     }
 
     @PostMapping
-    public Client insert(@Valid @RequestBody Client client) {
-        return service.insert(client);
+    public ResponseEntity<ClientDTO> insert(@Valid @RequestBody ClientDTO dto) {
+        dto = service.insert(dto);
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
+                .buildAndExpand(dto.getId()).toUri();
+        return ResponseEntity.created(uri).body(dto);
     }
 
-    @PutMapping("/{id}")
-    public Client update(@PathVariable Long id, @Valid @RequestBody Client client) {
-        return service.update(client, id);
+    @PutMapping(value = "/{id}")
+    public ResponseEntity<ClientDTO> update(@PathVariable Long id, @Valid @RequestBody ClientDTO dto) {
+            dto = service.update(id, dto);
+            return ResponseEntity.ok(dto);
     }
 
     @DeleteMapping(value = "/{id}" )
